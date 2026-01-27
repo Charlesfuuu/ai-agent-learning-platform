@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>调试工具</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>重新生成功能调试工具</h1>
+
+    <button onclick="checkMessages()">检查消息元素</button>
+    <button onclick="checkAttributes()">检查 data-user-message 属性</button>
+    <button onclick="checkFunctions()">检查函数可用性</button>
+
+    <div id="results"></div>
+
+    <script>
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function checkMessages() {
+            document.getElementById('results').innerHTML = '';
+
+            // 打开主页面
+            const mainWindow = window.open('http://localhost:8080', 'mainWindow');
+
+            setTimeout(() => {
+                try {
+                    const doc = mainWindow.document;
+                    const userMessages = doc.querySelectorAll('.message.user');
+                    const assistantMessages = doc.querySelectorAll('.message.assistant');
+
+                    log(`找到 ${userMessages.length} 条用户消息`);
+                    log(`找到 ${assistantMessages.length} 条 AI 消息`);
+
+                    userMessages.forEach((msg, index) => {
+                        const hasAttr = msg.hasAttribute('data-user-message');
+                        const attrValue = msg.getAttribute('data-user-message');
+                        log(`用户消息 #${index + 1}: ${hasAttr ? '✓ 有属性' : '✗ 缺少属性'} - ${attrValue ? attrValue.substring(0, 50) + '...' : '无值'}`, !hasAttr);
+                    });
+
+                } catch (e) {
+                    log('错误: ' + e.message, true);
+                }
+            }, 2000);
+        }
+
+        function checkAttributes() {
+            document.getElementById('results').innerHTML = '';
+            const mainWindow = window.open('http://localhost:8080', 'mainWindow');
+
+            setTimeout(() => {
+                try {
+                    const doc = mainWindow.document;
+                    const messages = doc.querySelectorAll('.message');
+
+                    log(`总共 ${messages.length} 条消息`);
+
+                    messages.forEach((msg, index) => {
+                        const isUser = msg.classList.contains('user');
+                        const isAssistant = msg.classList.contains('assistant');
+                        const hasUserMsgAttr = msg.hasAttribute('data-user-message');
+                        const hasRegenBtn = msg.querySelector('.regenerate-btn') !== null;
+                        const hasEditBtn = msg.querySelector('.edit-btn') !== null;
+
+                        log(`消息 #${index + 1}: ${isUser ? 'USER' : isAssistant ? 'ASSISTANT' : 'UNKNOWN'} | data-user-message=${hasUserMsgAttr} | 重新生成按钮=${hasRegenBtn} | 编辑按钮=${hasEditBtn}`);
+                    });
+                } catch (e) {
+                    log('错误: ' + e.message, true);
+                }
+            }, 2000);
+        }
+
+        function checkFunctions() {
+            document.getElementById('results').innerHTML = '';
+            const mainWindow = window.open('http://localhost:8080', 'mainWindow');
+
+            setTimeout(() => {
+                try {
+                    const win = mainWindow;
+
+                    log('检查全局函数...');
+                    log(`UIController: ${typeof win.UIController !== 'undefined' ? '✓ 存在' : '✗ 不存在'}`, typeof win.UIController === 'undefined');
+                    log(`SessionManager: ${typeof win.SessionManager !== 'undefined' ? '✓ 存在' : '✗ 不存在'}`, typeof win.SessionManager === 'undefined');
+                    log(`sendChatWithData: ${typeof win.sendChatWithData !== 'undefined' ? '✓ 存在' : '✗ 不存在'}`, typeof win.sendChatWithData === 'undefined');
+
+                    if (typeof win.UIController !== 'undefined') {
+                        log(`UIController.regenerateMessage: ${typeof win.UIController.regenerateMessage === 'function' ? '✓ 是函数' : '✗ 不是函数'}`, typeof win.UIController.regenerateMessage !== 'function');
+                    }
+
+                    if (typeof win.SessionManager !== 'undefined') {
+                        log(`SessionManager.getCurrentSessionId: ${typeof win.SessionManager.getCurrentSessionId === 'function' ? '✓ 是函数' : '✗ 不是函数'}`, typeof win.SessionManager.getCurrentSessionId !== 'function');
+
+                        const sessionId = win.SessionManager.getCurrentSessionId();
+                        log(`当前会话ID: ${sessionId || '(空)'}`);
+                    }
+                } catch (e) {
+                    log('错误: ' + e.message, true);
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

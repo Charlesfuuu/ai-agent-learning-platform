@@ -4,6 +4,7 @@ import com.ailearn.dto.*;
 import com.ailearn.service.ChatService;
 import com.ailearn.service.CodeReviewService;
 import java.util.Locale;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +19,13 @@ public class AiController {
 
   @PostMapping("/chat")
   public ChatResponse chat(
-      @RequestBody ChatRequest request,
+      @Valid @RequestBody ChatRequest request,
       @RequestHeader(value = "Accept-Language", required = false, defaultValue = "zh-CN")
           String languageHeader) {
     Locale locale = parseLocale(languageHeader);
-    String response = chatService.chat(request.getSessionId(), request.getMessage(), locale);
+    String response =
+        chatService.chat(
+            request.getSessionId(), request.getMessage(), locale, request.getIsRegenerate());
     return new ChatResponse(response);
   }
 

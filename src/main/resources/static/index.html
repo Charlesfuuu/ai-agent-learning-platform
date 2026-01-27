@@ -4,30 +4,43 @@
     <title data-i18n="ui.title">AI Agent 学习助手</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Markdown rendering - Local -->
+    <script src="/libs/marked.min.js"></script>
+
+    <!-- Code syntax highlighting - Local -->
+    <link rel="stylesheet" href="/libs/github-dark.min.css">
+    <script src="/libs/highlight.min.js"></script>
+
     <style>
         :root {
-            /* Color Palette - Tech Futuristic */
-            --bg-primary: #0a0e17;
-            --bg-secondary: #121826;
-            --bg-tertiary: #1a2235;
-            --accent-primary: #00d4ff;
-            --accent-secondary: #7c3aed;
-            --accent-glow: rgba(0, 212, 255, 0.3);
-            --text-primary: #e8eaed;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --sidebar-width: 300px;
+            /* Minimal color system - Like ChatGPT/Claude */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f8;
+            --bg-sidebar: #f9f9f9;
+            --bg-hover: #ececec;
+            --bg-active: #e8e8e8;
 
-            /* Fonts */
-            --font-display: 'Crimson Pro', serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --font-body: system-ui, -apple-system, sans-serif;
+            --text-primary: #0d0d0d;
+            --text-secondary: #676767;
+            --text-tertiary: #8e8e8e;
+
+            --border-light: #e5e5e5;
+            --border-medium: #d1d1d1;
+
+            /* Single accent color - Clean blue */
+            --accent: #10a37f;
+            --accent-hover: #0d8a6a;
+            --accent-light: #f0fdf4;
+
+            /* Code block colors */
+            --code-bg: #1a1a1a;
+            --code-border: #2d2d2d;
+
+            /* Layout */
+            --sidebar-width: 260px;
+            --content-max-width: 800px;
+            --header-height: 60px;
         }
 
         * {
@@ -37,131 +50,101 @@
         }
 
         body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: var(--font-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 14px;
             line-height: 1.6;
-            min-height: 100vh;
-            overflow: hidden;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Animated gradient background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background:
-                radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
-            animation: bgRotate 20s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes bgRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* App layout */
+        /* App Layout */
         .app-layout {
-            position: relative;
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr;
             height: 100vh;
-            z-index: 1;
         }
 
-        /* Sidebar */
+        /* Sidebar - Minimal */
         .sidebar {
-            background: rgba(18, 24, 38, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border-subtle);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
         .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .sidebar-header h3 {
-            font-family: var(--font-display);
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            color: var(--text-primary);
+            padding: 12px;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .new-session-btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-medium);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 100ms;
         }
 
         .new-session-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px var(--accent-glow);
+            background: var(--bg-hover);
+        }
+
+        .new-session-btn:active {
+            background: var(--bg-active);
         }
 
         .session-list-container {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 8px;
         }
 
         .session-list-container::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         .session-list-container::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
-            border-radius: 3px;
+            background: var(--border-medium);
+            border-radius: 2px;
         }
 
         .session-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .session-group-title {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-tertiary);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 8px 12px;
+            letter-spacing: 0.05em;
+            padding: 8px 12px 4px;
         }
 
         .session-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 12px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 4px;
+            transition: background 100ms;
+            margin-bottom: 2px;
         }
 
         .session-item:hover {
-            background: rgba(0, 212, 255, 0.1);
+            background: var(--bg-hover);
         }
 
         .session-item.active {
-            background: rgba(0, 212, 255, 0.2);
-            border-left: 3px solid var(--accent-primary);
+            background: var(--bg-active);
         }
 
         .session-item-content {
@@ -170,7 +153,8 @@
         }
 
         .session-title {
-            font-size: 0.9rem;
+            font-size: 14px;
+            font-weight: 400;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
@@ -178,18 +162,19 @@
         }
 
         .session-time {
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: var(--text-tertiary);
         }
 
         .session-delete {
             opacity: 0;
             background: none;
             border: none;
-            font-size: 1rem;
+            font-size: 16px;
             cursor: pointer;
             padding: 4px;
-            transition: opacity 0.2s;
+            color: var(--text-tertiary);
+            transition: opacity 100ms;
         }
 
         .session-item:hover .session-delete {
@@ -197,17 +182,17 @@
         }
 
         .session-delete:hover {
-            transform: scale(1.2);
+            color: var(--text-primary);
         }
 
         .session-empty {
             text-align: center;
             padding: 40px 20px;
-            color: var(--text-muted);
-            font-style: italic;
+            color: var(--text-tertiary);
+            font-size: 14px;
         }
 
-        /* Main content */
+        /* Main Content */
         .main-content {
             display: flex;
             flex-direction: column;
@@ -215,15 +200,15 @@
             overflow: hidden;
         }
 
-        /* Header */
+        /* Header - Clean */
         .header {
+            height: var(--header-height);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 30px;
-            background: rgba(18, 24, 38, 0.6);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-primary);
         }
 
         .header-left {
@@ -236,244 +221,442 @@
             display: none;
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 20px;
             cursor: pointer;
             color: var(--text-primary);
+            padding: 4px;
         }
 
         h1 {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.02em;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .language-switcher {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
-        .language-switcher label {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
+        .export-btn {
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 100ms;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         .language-switcher select {
-            background: var(--bg-tertiary);
+            background: transparent;
             color: var(--text-primary);
-            border: 1px solid var(--border-subtle);
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
+            border: 1px solid var(--border-medium);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border 100ms;
         }
 
         .language-switcher select:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 20px var(--accent-glow);
+            background: var(--bg-secondary);
         }
 
-        /* Content area */
+        .language-switcher select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Chat Area - Spacious */
         .content-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding: 20px 30px;
         }
 
-        /* Chat display */
         .chat-display {
             flex: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: rgba(18, 24, 38, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-subtle);
-            border-radius: 16px;
+            padding: 24px;
         }
 
         .chat-display::-webkit-scrollbar {
-            width: 8px;
+            width: 4px;
         }
 
         .chat-display::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
-            border-radius: 4px;
+            background: var(--border-medium);
+            border-radius: 2px;
+        }
+
+        .chat-messages {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
         }
 
         .message {
-            margin-bottom: 20px;
-            padding: 16px;
-            border-radius: 12px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.user {
-            background: rgba(0, 212, 255, 0.1);
-            border-left: 3px solid var(--accent-primary);
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
         }
 
         .message.assistant {
-            background: rgba(124, 58, 237, 0.1);
-            border-left: 3px solid var(--accent-secondary);
+            align-items: flex-start;
+        }
+
+        .message.user {
+            align-items: flex-end;
         }
 
         .message-header {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
 
+        .message-wrapper {
+            position: relative;
+            max-width: 85%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .message.assistant .message-wrapper {
+            align-self: flex-start;
+        }
+
+        .message.user .message-wrapper {
+            align-self: flex-end;
+        }
+
         .message-content {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 12px 16px;
             color: var(--text-primary);
-            line-height: 1.8;
+            line-height: 1.7;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: var(--accent-light);
             white-space: pre-wrap;
         }
 
         .message.loading .message-content {
+            color: var(--text-tertiary);
             font-style: italic;
-            color: var(--text-muted);
+        }
+
+        /* Message action buttons - Below content */
+        .message-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 150ms;
+            padding: 0 4px;
+        }
+
+        .message-wrapper:hover .message-actions {
+            opacity: 1;
+        }
+
+        .message-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            opacity: 0.6;
+            transition: all 150ms;
+            line-height: 1;
+        }
+
+        .message-actions button:hover {
+            opacity: 1;
+            background: var(--bg-hover);
+            transform: scale(1.1);
+        }
+
+        /* Individual button styles */
+        .delete-btn:hover {
+            color: #dc2626;
+        }
+
+        .copy-btn:hover {
+            color: var(--accent);
+        }
+
+        .copy-btn.copied {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .edit-btn:hover {
+            color: #f59e0b;
+        }
+
+        .regenerate-btn:hover,
+        .retry-btn:hover {
+            color: var(--accent);
+        }
+
+        .stop-btn {
+            background: #ef4444 !important;
+            color: white !important;
+            opacity: 1 !important;
+            padding: 4px 8px !important;
+            font-size: 12px !important;
+        }
+
+        .stop-btn:hover {
+            background: #dc2626 !important;
+        }
+
+        /* Error message styling */
+        .message.error .message-content {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        /* Markdown content - Clean typography */
+        .message-content h1,
+        .message-content h2,
+        .message-content h3 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content ul,
+        .message-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+        }
+
+        .message-content p {
+            margin: 8px 0;
+        }
+
+        /* Code blocks - GitHub style */
+        .message-content pre {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 12px 0;
+            position: relative;
+        }
+
+        .message-content code {
+            background: var(--bg-hover);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+            color: #e6edf3;
+        }
+
+        /* Code copy button - Clean */
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: #e6edf3;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 100ms;
+        }
+
+        pre:hover .code-copy-btn {
+            opacity: 1;
+        }
+
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .code-copy-btn.copied {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .message-content blockquote {
+            border-left: 3px solid var(--border-medium);
+            padding-left: 12px;
+            margin: 12px 0;
+            color: var(--text-secondary);
+        }
+
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        .message-content th,
+        .message-content td {
+            border: 1px solid var(--border-light);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .message-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .message-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .message-content a:hover {
+            text-decoration: underline;
         }
 
         .no-messages {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
+            padding: 80px 20px;
+            color: var(--text-tertiary);
+            font-size: 14px;
         }
 
-        /* Input area */
+        /* Input Area - Clean */
         .input-area {
+            border-top: 1px solid var(--border-light);
+            padding: 16px 24px;
+            background: var(--bg-primary);
+        }
+
+        .input-wrapper {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+        }
+
+        /* Quick prompts - Simple pills */
+        .quick-prompts {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .quick-prompts::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .quick-prompts::-webkit-scrollbar-thumb {
+            background: var(--border-medium);
+            border-radius: 1px;
+        }
+
+        .prompt-chip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 100ms;
+        }
+
+        .prompt-chip:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-medium);
+            color: var(--text-primary);
+        }
+
+        .input-container {
             display: flex;
             gap: 12px;
-            padding: 20px;
-            background: rgba(18, 24, 38, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-subtle);
-            border-radius: 16px;
+            align-items: flex-end;
         }
 
-        .input-area textarea {
+        .input-container textarea {
             flex: 1;
-            background: var(--bg-primary);
+            background: var(--bg-secondary);
             color: var(--text-primary);
-            border: 2px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-family: var(--font-mono);
-            font-size: 0.95rem;
-            line-height: 1.6;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
             resize: none;
-            transition: all 0.3s ease;
+            transition: border 100ms;
+            max-height: 200px;
         }
 
-        .input-area textarea:focus {
+        .input-container textarea:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            border-color: var(--accent);
         }
 
-        .input-area textarea::placeholder {
-            color: var(--text-muted);
-            font-style: italic;
+        .input-container textarea::placeholder {
+            color: var(--text-tertiary);
         }
 
-        .input-area button {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        .input-container button {
+            background: var(--accent);
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 14px 28px;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 100ms;
             white-space: nowrap;
         }
 
-        .input-area button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 25px var(--accent-glow);
+        .input-container button:hover {
+            background: var(--accent-hover);
         }
 
-        /* Code review section (simplified) */
-        .code-review-section {
-            padding: 30px;
-            background: rgba(18, 24, 38, 0.4);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border-subtle);
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .section-icon {
-            font-size: 1.5rem;
-        }
-
-        h2 {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        textarea#codeInput {
-            width: 100%;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 2px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 16px 20px;
-            font-family: var(--font-mono);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            resize: vertical;
-            min-height: 150px;
-            margin-bottom: 16px;
-        }
-
-        textarea#codeInput:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .response {
-            background: var(--bg-primary);
-            border: 2px solid var(--border-subtle);
-            border-left: 4px solid var(--accent-primary);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 16px;
-            white-space: pre-wrap;
-            line-height: 1.8;
-            max-height: 400px;
-            overflow-y: auto;
+        .input-container button:disabled {
+            background: var(--bg-hover);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
         }
 
         /* Mobile overlay */
@@ -484,10 +667,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 9;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 200ms;
         }
 
         .sidebar-overlay.active {
@@ -509,7 +692,7 @@
                 width: 280px;
                 z-index: 10;
                 transform: translateX(-100%);
-                transition: transform 0.3s ease;
+                transition: transform 200ms;
             }
 
             .sidebar.open {
@@ -521,27 +704,28 @@
             }
 
             h1 {
-                font-size: 1.3rem;
+                font-size: 15px;
             }
 
-            .language-switcher label {
-                display: none;
-            }
-
-            .content-area {
-                padding: 12px;
+            .chat-display {
+                padding: 16px;
             }
 
             .input-area {
-                padding: 12px;
+                padding: 12px 16px;
             }
 
-            .code-review-section {
-                padding: 20px 12px;
+            /* Mobile: Always show action buttons (no hover needed) */
+            .message-actions {
+                opacity: 1;
+            }
+
+            .message-actions button {
+                font-size: 13px;
             }
         }
 
-        /* Accessibility */
+        /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             *,
             *::before,
@@ -552,21 +736,141 @@
             }
         }
 
+        /* Focus indicators */
         *:focus-visible {
-            outline: 2px solid var(--accent-primary);
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
+        }
+
+        /* Toast 提示组件样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .toast-show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            white-space: pre-line;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: var(--bg-hover);
+        }
+
+        .toast-success {
+            border-left: 4px solid #10a37f;
+        }
+
+        .toast-success .toast-icon {
+            color: #10a37f;
+        }
+
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast-error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast-info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .toast-info .toast-icon {
+            color: #3b82f6;
+        }
+
+        .toast-warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .toast-warning .toast-icon {
+            color: #f59e0b;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                align-items: stretch;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar overlay for mobile -->
+    <!-- Sidebar overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="UIController.closeSidebar()"></div>
 
     <div class="app-layout">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h3 data-i18n="ui.sessions.header">对话历史</h3>
                 <button class="new-session-btn" onclick="SessionManager.createNewSession()" data-i18n="ui.sessions.newButton">
                     新建对话
                 </button>
@@ -585,7 +889,10 @@
                     <h1 data-i18n="ui.title">AI Agent 学习助手</h1>
                 </div>
                 <div class="language-switcher">
-                    <label data-i18n="ui.language.label">语言</label>
+                    <button class="export-btn" onclick="exportChat()" title="导出对话">
+                        <span>💾</span>
+                        <span data-i18n="ui.export">导出</span>
+                    </button>
                     <select id="languageSelect" onchange="switchLanguage()">
                         <option value="zh-CN" data-i18n="ui.language.chinese">中文</option>
                         <option value="en-US" data-i18n="ui.language.english">English</option>
@@ -595,40 +902,50 @@
 
             <!-- Chat area -->
             <div class="content-area">
-                <div class="chat-display" id="chatMessagesDisplay"></div>
+                <div class="chat-display">
+                    <div class="chat-messages" id="chatMessagesDisplay"></div>
+                </div>
 
                 <div class="input-area">
-                    <textarea
-                        id="chatInput"
-                        rows="3"
-                        placeholder="输入你的问题...（Enter 换行，Ctrl+Enter 发送）"
-                        data-i18n="ui.chat.placeholder"
-                        data-i18n-attr="placeholder"></textarea>
-                    <button onclick="sendChat()" data-i18n="ui.chat.sendButton">发送</button>
-                </div>
-            </div>
+                    <div class="input-wrapper">
+                        <!-- Quick prompts -->
+                        <div class="quick-prompts" id="quickPrompts">
+                            <div class="prompt-chip" onclick="usePrompt('解释这个概念')">💡 解释概念</div>
+                            <div class="prompt-chip" onclick="usePrompt('写一段代码实现')">💻 代码实现</div>
+                            <div class="prompt-chip" onclick="usePrompt('总结要点')">📝 总结要点</div>
+                            <div class="prompt-chip" onclick="usePrompt('翻译成英文')">🌐 翻译英文</div>
+                        </div>
 
-            <!-- Code review section -->
-            <div class="code-review-section">
-                <div class="section-header">
-                    <span class="section-icon">🔍</span>
-                    <h2 data-i18n="ui.codereview.header">代码审查</h2>
+                        <div class="input-container">
+                            <textarea
+                                id="chatInput"
+                                rows="1"
+                                placeholder="输入消息..."
+                                data-i18n="ui.chat.placeholder"
+                                data-i18n-attr="placeholder"></textarea>
+                            <button onclick="sendChat()" data-i18n="ui.chat.sendButton">发送</button>
+                        </div>
+                    </div>
                 </div>
-                <textarea
-                    id="codeInput"
-                    placeholder="粘贴你的 Java 代码..."
-                    data-i18n="ui.codereview.placeholder"
-                    data-i18n-attr="placeholder"></textarea>
-                <button onclick="reviewCode()" data-i18n="ui.codereview.reviewButton">审查代码</button>
-                <div id="codeResponse" class="response" style="display:none;"></div>
             </div>
         </main>
     </div>
 
-    <script src="/js/i18n.js"></script>
-    <script src="/js/uiController.js"></script>
-    <script src="/js/sessionManager.js"></script>
+    <script src="/js/toast.js?v=2026012720"></script>
+    <script src="/js/i18n.js?v=2026012719"></script>
+    <script src="/js/uiController.js?v=2026012719"></script>
+    <script src="/js/sessionManager.js?v=2026012719"></script>
     <script>
+        // Configure marked.js
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: false,
+                mangle: false
+            });
+        }
+
         // Initialize application
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize i18n
@@ -639,22 +956,88 @@
             // Initialize session manager
             await SessionManager.init();
 
+            // Set up event delegation for all chat message buttons
+            const chatDisplay = document.getElementById('chatMessagesDisplay');
+            if (chatDisplay) {
+                chatDisplay.addEventListener('click', function(e) {
+                    // Get the actual button element (in case user clicked on emoji inside button)
+                    const target = e.target.closest('button');
+                    if (!target) return;
+
+                    // Handle copy button
+                    if (target.classList.contains('copy-btn')) {
+                        UIController.copyMessage(target);
+                        return;
+                    }
+
+                    // Handle code copy button
+                    if (target.classList.contains('code-copy-btn')) {
+                        const preBlock = target.parentElement;
+                        const codeBlock = preBlock.querySelector('code');
+                        if (!codeBlock) return;
+
+                        const codeText = codeBlock.textContent;
+                        navigator.clipboard.writeText(codeText).then(() => {
+                            const originalText = target.textContent;
+                            target.textContent = '已复制!';
+                            target.classList.add('copied');
+                            setTimeout(() => {
+                                target.textContent = originalText;
+                                target.classList.remove('copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy code:', err);
+                        });
+                        return;
+                    }
+
+                    // Handle delete button
+                    if (target.classList.contains('delete-btn')) {
+                        UIController.deleteMessage(target);
+                        return;
+                    }
+
+                    // Handle edit button
+                    if (target.classList.contains('edit-btn')) {
+                        UIController.editMessage(target);
+                        return;
+                    }
+
+                    // Handle retry button
+                    if (target.classList.contains('retry-btn')) {
+                        UIController.retryMessage(target);
+                        return;
+                    }
+
+                    // Handle regenerate button
+                    if (target.classList.contains('regenerate-btn')) {
+                        console.log('[Event Delegation] Regenerate button clicked');
+                        UIController.regenerateMessage(target);
+                        return;
+                    }
+
+                    // Handle stop button
+                    if (target.classList.contains('stop-btn')) {
+                        UIController.stopGeneration();
+                        return;
+                    }
+                });
+            }
+
             // Keyboard shortcuts
             const chatInput = document.getElementById('chatInput');
-            const codeInput = document.getElementById('codeInput');
 
             chatInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendChat();
                 }
             });
 
-            codeInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    reviewCode();
-                }
+            // Auto-resize textarea
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 200) + 'px';
             });
         });
 
@@ -663,7 +1046,67 @@
             I18n.setLocale(newLocale);
             I18n.updatePageTranslations();
             document.title = I18n.translate('ui.title');
-            SessionManager.renderSessionList(); // Re-render to update time labels
+            SessionManager.renderSessionList();
+        }
+
+        // Use quick prompt
+        function usePrompt(promptText) {
+            const input = document.getElementById('chatInput');
+            input.value = promptText + ': ';
+            input.focus();
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+        }
+
+        // Export chat
+        async function exportChat() {
+            const sessionId = SessionManager.getCurrentSessionId();
+            if (!sessionId) {
+                Toast.info('无法导出：请先创建或选择一个会话');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/sessions/${sessionId}/messages`);
+                if (!response.ok) {
+                    const errorDetail = await response.text().catch(() => response.statusText);
+                    throw new Error(`服务器返回错误 ${response.status}: ${errorDetail}`);
+                }
+
+                const messages = await response.json();
+                if (!Array.isArray(messages)) {
+                    throw new Error('服务器返回的数据格式不正确');
+                }
+
+                if (messages.length === 0) {
+                    Toast.info('当前会话没有消息可以导出');
+                    return;
+                }
+
+                let markdown = `# AI Agent 对话记录\n\n`;
+                markdown += `导出时间: ${new Date().toLocaleString('zh-CN')}\n\n`;
+                markdown += `---\n\n`;
+
+                for (const msg of messages) {
+                    const role = msg.role === 'USER' ? '👤 用户' : '🤖 AI助手';
+                    markdown += `## ${role}\n\n${msg.content}\n\n`;
+                }
+
+                const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chat-${sessionId}-${Date.now()}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                Toast.success('对话已导出成功！');
+            } catch (error) {
+                console.error('Export error:', error);
+                Toast.error('导出失败: ' + error.message + '\n\n建议：\n1. 检查网络连接\n2. 刷新页面后重试\n3. 如果问题持续，请联系管理员');
+            }
         }
 
         async function sendChat() {
@@ -681,14 +1124,35 @@
                 return;
             }
 
-            // Show user message immediately
-            UIController.appendMessage('USER', message);
-            UIController.showChatLoading();
-
-            // Clear input
+            // Clear input immediately
             input.value = '';
+            input.style.height = 'auto';
+
+            // Send the message (input will be disabled by sendChatWithData)
+            await sendChatWithData(sessionId, message);
+        }
+
+        // Helper function to send chat with specific data (used by retry/regenerate)
+        async function sendChatWithData(sessionId, message, skipUserMessage = false, isRegenerate = false) {
+            // Disable input and send button during request
+            const input = document.getElementById('chatInput');
+            const sendButton = document.querySelector('button[onclick="sendChat()"]');
+
+            if (input) input.disabled = true;
+            if (sendButton) sendButton.disabled = true;
 
             try {
+                // Only show user message if not skipping (for new sends and retries)
+                if (!skipUserMessage) {
+                    UIController.appendMessage('USER', message);
+                }
+
+                UIController.showChatLoading();
+
+                // Create abort controller for stopping generation
+                const abortController = new AbortController();
+                window.currentAbortController = abortController;
+
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -697,54 +1161,53 @@
                     },
                     body: JSON.stringify({
                         sessionId: sessionId,
-                        message: message
-                    })
+                        message: message,
+                        isRegenerate: isRegenerate  // 告诉后端这是重新生成模式
+                    }),
+                    signal: abortController.signal
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
 
                 const data = await response.json();
                 UIController.hideChatLoading();
                 UIController.appendMessage('ASSISTANT', data.response);
 
-                // Refresh session list to update title and time
                 await SessionManager.refreshSessions();
             } catch (error) {
                 UIController.hideChatLoading();
-                UIController.appendMessage('ASSISTANT', I18n.translate('ui.chat.error') + error.message);
-            }
-        }
 
-        async function reviewCode() {
-            const input = document.getElementById('codeInput');
-            const responseDiv = document.getElementById('codeResponse');
+                // Check if request was aborted
+                if (error.name === 'AbortError') {
+                    // User clicked stop, message already shown
+                    return;
+                }
 
-            const code = input.value.trim();
-            if (!code) {
-                alert(I18n.translate('ui.alert.emptyCode'));
-                return;
-            }
-
-            responseDiv.style.display = 'block';
-            responseDiv.textContent = I18n.translate('ui.codereview.analyzing');
-
-            try {
-                const response = await fetch('/api/code/review', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept-Language': I18n.getLocale()
-                    },
-                    body: JSON.stringify({
-                        code: code,
-                        language: 'java'
-                    })
+                // Display error message with retry button
+                const errorMessage = I18n.translate('ui.chat.error') + error.message;
+                UIController.appendMessage('ASSISTANT', errorMessage, {
+                    isError: true,
+                    retryData: {
+                        sessionId: sessionId,
+                        message: message
+                    }
                 });
+            } finally {
+                // Always reset abort controller and re-enable input
+                window.currentAbortController = null;
 
-                const data = await response.json();
-                responseDiv.textContent = data.feedback;
-            } catch (error) {
-                responseDiv.textContent = I18n.translate('ui.codereview.error') + error.message;
+                if (input) {
+                    input.disabled = false;
+                    input.focus();
+                }
+                if (sendButton) sendButton.disabled = false;
             }
         }
+
+        // Make sendChatWithData globally accessible for retry/regenerate
+        window.sendChatWithData = sendChatWithData;
     </script>
 </body>
 </html>

@@ -92,6 +92,28 @@ public class SessionController {
     return ResponseEntity.ok(dtos);
   }
 
+  /** 删除指定的消息 */
+  @DeleteMapping("/messages/{messageId}")
+  @Transactional
+  public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId) {
+    log.info("Deleting message: {}", messageId);
+
+    try {
+      if (!messageRepository.existsById(messageId)) {
+        log.warn("Message not found: {}", messageId);
+        return ResponseEntity.notFound().build();
+      }
+
+      messageRepository.deleteById(messageId);
+      log.info("Deleted message: {}", messageId);
+
+      return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+      log.error("Failed to delete message: {} - {}", messageId, e.getMessage(), e);
+      return ResponseEntity.internalServerError().build();
+    }
+  }
+
   /** 转换 Session 为 SessionDTO */
   private SessionDTO toSessionDTO(Session session) {
     long messageCount = messageRepository.countBySession(session);
@@ -108,6 +130,7 @@ public class SessionController {
   /** 转换 Message 为 MessageDTO */
   private MessageDTO toMessageDTO(Message message) {
     return MessageDTO.builder()
+        .id(message.getId())
         .role(message.getRole())
         .content(message.getContent())
         .sequenceNumber(message.getSequenceNumber())

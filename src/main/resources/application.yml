@@ -5,6 +5,16 @@ spring:
   application:
     name: ai-agent-learning-platform
 
+  # 静态资源缓存配置（开发环境禁用缓存）
+  web:
+    resources:
+      cache:
+        period: 0
+        cachecontrol:
+          no-cache: true
+          no-store: true
+          must-revalidate: true
+
   # 数据库配置
   datasource:
     url: jdbc:mysql://localhost:3306/ai_learning?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true

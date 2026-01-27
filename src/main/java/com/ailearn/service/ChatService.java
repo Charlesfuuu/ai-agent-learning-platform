@@ -30,8 +30,13 @@ public class ChatService {
   private static final int MAX_CONTEXT_MESSAGES = 50;
 
   @Transactional
-  public String chat(String sessionId, String userMessage, Locale locale) {
-    log.info("Session: {}, User message: {}, Locale: {}", sessionId, userMessage, locale);
+  public String chat(String sessionId, String userMessage, Locale locale, boolean isRegenerate) {
+    log.info(
+        "Session: {}, User message: {}, Locale: {}, IsRegenerate: {}",
+        sessionId,
+        userMessage,
+        locale,
+        isRegenerate);
 
     // 获取或创建会话
     Session session = getOrCreateSession(sessionId);
@@ -43,7 +48,7 @@ public class ChatService {
     String response = chatModel.generate(fullPrompt);
 
     // 保存历史
-    saveHistory(session, userMessage, response);
+    saveHistory(session, userMessage, response, isRegenerate);
 
     log.info("Response generated successfully");
     return response;
@@ -87,37 +92,66 @@ public class ChatService {
     return prompt.toString();
   }
 
-  private void saveHistory(Session session, String userMessage, String response) {
-    // 获取下一个序号
-    Integer maxSeq = messageRepository.findMaxSequenceNumberBySession(session);
-    int nextSeq = maxSeq + 1;
+  private void saveHistory(
+      Session session, String userMessage, String response, boolean isRegenerate) {
+    try {
+      // 获取下一个序号，如果为空则从 1 开始
+      Integer maxSeq = messageRepository.findMaxSequenceNumberBySession(session);
+      if (maxSeq == null) {
+        log.debug(
+            "No existing messages for session: {}, starting from sequence 1",
+            session.getSessionId());
+        maxSeq = 0;
+      }
+      int nextSeq = maxSeq + 1;
 
-    // 保存用户消息
-    Message userMsg =
-        Message.builder()
-            .session(session)
-            .role(MessageRole.USER)
-            .content(userMessage)
-            .sequenceNumber(nextSeq)
-            .build();
+      if (isRegenerate) {
+        // 重新生成模式：只保存 AI 响应，不保存用户消息
+        // 原因：用户消息已存在于历史记录中，无需重复保存
+        // 新响应替换同一序号位置的旧响应，保持时间顺序
+        Message assistantMsg =
+            Message.builder()
+                .session(session)
+                .role(MessageRole.ASSISTANT)
+                .content(response)
+                .sequenceNumber(nextSeq)
+                .build();
+        messageRepository.save(assistantMsg);
+        log.debug("Saved regenerated message with sequence number: {}", nextSeq);
+      } else {
+        // 正常模式：保存用户消息和 AI 响应
+        Message userMsg =
+            Message.builder()
+                .session(session)
+                .role(MessageRole.USER)
+                .content(userMessage)
+                .sequenceNumber(nextSeq)
+                .build();
 
-    // 保存 AI 响应
-    Message assistantMsg =
-        Message.builder()
-            .session(session)
-            .role(MessageRole.ASSISTANT)
-            .content(response)
-            .sequenceNumber(nextSeq + 1)
-            .build();
+        Message assistantMsg =
+            Message.builder()
+                .session(session)
+                .role(MessageRole.ASSISTANT)
+                .content(response)
+                .sequenceNumber(nextSeq + 1)
+                .build();
 
-    messageRepository.saveAll(List.of(userMsg, assistantMsg));
+        messageRepository.saveAll(List.of(userMsg, assistantMsg));
+        log.debug("Saved messages with sequence numbers: {}, {}", nextSeq, nextSeq + 1);
 
-    // 如果是首条消息，更新会话标题
-    if (nextSeq == 1) {
-      updateSessionTitle(session, userMessage);
+        // 如果是首条消息，更新会话标题
+        if (nextSeq == 1) {
+          updateSessionTitle(session, userMessage);
+        }
+      }
+    } catch (Exception e) {
+      log.error(
+          "Failed to save chat history for session: {} - {}",
+          session.getSessionId(),
+          e.getMessage(),
+          e);
+      throw new RuntimeException("Failed to save conversation history", e);
     }
-
-    log.debug("Saved messages with sequence numbers: {}, {}", nextSeq, nextSeq + 1);
   }
 
   private void updateSessionTitle(Session session, String firstMessage) {
