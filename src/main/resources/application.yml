@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ai-agent-learning-platform
+
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_learning?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: azj021017.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  # JPA / Hibernate 配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+          time_zone: Asia/Shanghai
+
+# Ollama 本地 AI 配置（免费）
+ollama:
+  base-url: http://localhost:11434
+  model-name: llama3.2:3b
+  temperature: 0.7
+  timeout: 60
+
+# 日志配置
+logging:
+  level:
+    com.ailearn: INFO
+    dev.langchain4j: DEBUG
