@@ -1,6 +1,12 @@
-# AI Agent 学习平台 (轻量级版本)
+# AI Agent 学习平台
 
-基于 Spring Boot + LangChain4j + Ollama 的本地 AI 编程学习助手（完全免费）。
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-11-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.18-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![LangChain4j](https://img.shields.io/badge/LangChain4j-0.29.1-purple.svg)](https://github.com/langchain4j/langchain4j)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20AI-black.svg)](https://ollama.com/)
+
+基于 Spring Boot + LangChain4j + Ollama 的本地 AI 编程学习助手（完全免费，无需 API Key）。
 
 ## 功能特性
 
