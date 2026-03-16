@@ -26,7 +26,28 @@
 
 ## 快速开始
 
-### 0. 安装 Ollama（首次使用）
+### 0. 环境配置
+
+**首次使用需要配置环境变量：**
+
+```bash
+# 复制环境变量模板
+cp .env.example .env
+
+# 编辑 .env 文件，填入实际配置
+# 主要需要配置数据库密码
+```
+
+`.env` 文件示例：
+```bash
+DB_PASSWORD=your_database_password
+DB_USERNAME=root
+DB_URL=jdbc:mysql://localhost:3306/ai_learning?useSSL=false&serverTimezone=Asia/Shanghai
+```
+
+> **重要**: `.env` 文件包含敏感信息，已被 git 忽略，不会提交到仓库
+
+### 1. 安装 Ollama（首次使用）
 
 详细安装步骤请查看 [OLLAMA_INSTALL.md](OLLAMA_INSTALL.md)
 
@@ -38,7 +59,7 @@
 ollama pull qwen2.5:7b
 ```
 
-### 1. 使用脚本启动（推荐）
+### 2. 使用脚本启动（推荐）
 
 ```bash
 cd /Users/fushenlin/chelaile/ai-agent-learning-platform
@@ -53,20 +74,16 @@ cd /Users/fushenlin/chelaile/ai-agent-learning-platform
 ./stop.sh
 ```
 
-### 2. 使用 Maven 命令
-  api-key: sk-542b949afaa949f7aace25477115719e
-```
+### 3. 使用 Maven 命令
 
-> 注意：生产环境建议使用环境变量来管理 API Key
-
-**2. 编译项目**
+**编译项目**
 
 ```bash
 cd /Users/fushenlin/chelaile/ai-agent-learning-platform
 JAVA_HOME=/Users/fushenlin/Library/Java/JavaVirtualMachines/corretto-11.0.28/Contents/Home mvn clean package -DskipTests
 ```
 
-**3. 运行应用**
+**运行应用**
 
 ```bash
 JAVA_HOME=/Users/fushenlin/Library/Java/JavaVirtualMachines/corretto-11.0.28/Contents/Home mvn spring-boot:run
@@ -78,7 +95,7 @@ JAVA_HOME=/Users/fushenlin/Library/Java/JavaVirtualMachines/corretto-11.0.28/Con
 JAVA_HOME=/Users/fushenlin/Library/Java/JavaVirtualMachines/corretto-11.0.28/Contents/Home java -jar target/ai-agent-learning-platform-1.0.0-SNAPSHOT.jar
 ```
 
-**4. 访问应用**
+**访问应用**
 
 打开浏览器访问: http://localhost:8080/index.html
 
@@ -178,14 +195,31 @@ ai-agent-learning-platform/
 
 ## 配置说明
 
-主要配置在 `src/main/resources/application.yml`:
+### 环境变量配置（推荐）
+
+所有敏感配置通过 `.env` 文件管理：
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| `DB_URL` | 数据库连接地址 | jdbc:mysql://localhost:3306/ai_learning |
+| `DB_USERNAME` | 数据库用户名 | root |
+| `DB_PASSWORD` | 数据库密码 | **必填** |
+| `OLLAMA_BASE_URL` | Ollama 服务地址 | http://localhost:11434 |
+| `OLLAMA_MODEL_NAME` | 模型名称 | llama3.2:3b |
+| `OLLAMA_TEMPERATURE` | 温度参数 (0-1) | 0.7 |
+| `OLLAMA_TIMEOUT` | 超时时间（秒） | 60 |
+| `SERVER_PORT` | 服务端口 | 8080 |
+
+### application.yml 配置
+
+配置文件在 `src/main/resources/application.yml`，支持通过环境变量覆盖：
 
 ```yaml
 ollama:
-  base-url: http://localhost:11434  # Ollama 服务地址
-  model-name: qwen2.5:7b            # 使用的模型名称
-  temperature: 0.7                  # 温度参数（0-1，越高越随机）
-  timeout: 60                       # 超时时间（秒）
+  base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+  model-name: ${OLLAMA_MODEL_NAME:llama3.2:3b}
+  temperature: ${OLLAMA_TEMPERATURE:0.7}
+  timeout: ${OLLAMA_TIMEOUT:60}
 ```
 
 ### 切换模型
